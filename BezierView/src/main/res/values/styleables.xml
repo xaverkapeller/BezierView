@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="BezierView">
+        <attr name="text" format="string" />
+        <attr name="textColor" format="color"/>
+        <attr name="textSize" format="dimension" />
+        <attr name="textStrokeWidth" format="dimension" />
+        <attr name="animationDuration" format="integer" />
+        <attr name="digitPadding_vertical" format="dimension" />
+        <attr name="digitPadding_horizontal" format="dimension" />
+    </declare-styleable>
+
+</resources>

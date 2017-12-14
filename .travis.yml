@@ -1,0 +1,12 @@
+language: android
+jdk: oraclejdk8
+android:
+  components:
+  - tools
+  - platform-tools
+  - extra-android-m2repository
+  - android-26
+script:
+  - ./gradlew clean build test
+after_success:
+  - ./gradlew bintrayUpload
