@@ -16,7 +16,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
 import com.github.wrdlbrnft.bezier.symbols.BezierSymbol;
-import com.github.wrdlbrnft.bezierview.R;
+import com.github.wrdlbrnft.bezier.R;
 
 import java.util.ArrayList;
 import java.util.List;
