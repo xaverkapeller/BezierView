@@ -67,28 +67,37 @@ public interface BezierString extends Iterable<BezierSymbol> {
         return of(String.valueOf(number));
     }
 
+    static BezierString of(double number) {
+        return of(String.valueOf(number));
+    }
+
     class Builder {
 
         private final List<BezierString> mParts = new ArrayList<>();
 
-        public Builder append(String text) {
-            mParts.add(BezierString.of(text));
+        public Builder append(BezierString bezierString) {
+            mParts.add(bezierString);
             return this;
+        }
+
+        public Builder append(String text) {
+            return append(BezierString.of(text));
         }
 
         public Builder append(int number) {
-            mParts.add(BezierString.of(number));
-            return this;
+            return append(BezierString.of(number));
         }
 
         public Builder append(long number) {
-            mParts.add(BezierString.of(number));
-            return this;
+            return append(BezierString.of(number));
         }
 
         public Builder append(float number) {
-            mParts.add(BezierString.of(number));
-            return this;
+            return append(BezierString.of(number));
+        }
+
+        public Builder append(double number) {
+            return append(BezierString.of(number));
         }
 
         public BezierString build() {
