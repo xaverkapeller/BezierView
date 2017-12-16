@@ -11,7 +11,7 @@ Beautifully animated morphing numbers made easy!
 
 Just add this dependency to your build.gradle file:
 
-```
+```groovy
 compile 'com.github.wrdlbrnft:bezier-view:0.1.0.1'
 ```
 
@@ -19,17 +19,18 @@ compile 'com.github.wrdlbrnft:bezier-view:0.1.0.1'
 
 Add the `BezierView` to your layout:
 
-```
+```xml
 <com.github.wrdlbrnft.bezier.BezierView
-    android:id="@+id/bezier_view
+    android:id="@+id/bezier_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"/>
 ```
 
 You can also set a number of properties directly in your layout:
 
-```
+```xml
 <com.github.wrdlbrnft.bezier.BezierView
+    android:id="@+id/bezier_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:textColor="@android:color/black"
@@ -53,7 +54,7 @@ You can also set a number of properties directly in your layout:
 
 Of course you can also set all these properties in your code:
 
-```
+```java
 bezierView.setTextColor(Color.BLACK);
 bezierView.setTextStrokeWidth(someStrokeWidth);
 bezierView.setTextSize(someSize);
@@ -63,7 +64,7 @@ bezierView.setVerticalDigitPadding(somePadding);
 
 However when setting a text you first need to create an instance of a `BezierString`:
 
-```
+```java
 BezierString string = BezierString.of("1234");
 bezierView.setText(string);
 ```
@@ -72,7 +73,7 @@ The `BezierString` class is what turns a normal `String` into something the `Bez
 
 You can also create a `BezierString` from numbers directly:
 
-```
+```java
 BezierString fromInt = BezierString.of(1234);
 BezierString fromLong = BezierString.of(5678L);
 BezierString fromFloat = BezierString.of(3.431f);
@@ -81,13 +82,13 @@ BezierString fromDouble = BezierString.of(3.1415926535);
 
 It is also possible to concatenate two or more `BezierString` instances:
 
-```
+```java
 BezierString result = BezierString.concat(someBezierString, anotherBezierString);
 ```
 
 Alternatively you can also use the `BezierString.Builder` class to build a BezierString from many different parts:
 
-```
+```java
 BezierString result = new BezierString.Builder()
         .append(someInt)
         .append(someLong)
@@ -100,7 +101,7 @@ BezierString result = new BezierString.Builder()
 
 If you ever need to read the actual characters in a `BezierString` you can turn the `BezierString` into a normal `String` using the `toString()` method:
 
-```
+```java
 String text = someBezierString.toString();
 ```
 
