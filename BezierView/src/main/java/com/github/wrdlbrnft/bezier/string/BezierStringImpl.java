@@ -17,9 +17,11 @@ import java.util.List;
 class BezierStringImpl implements BezierString {
 
     private final List<BezierSymbol> mBezierSymbols;
+    private final String mStringRepresentation;
 
-    BezierStringImpl(List<BezierSymbol> bezierSymbols) {
+    BezierStringImpl(List<BezierSymbol> bezierSymbols, String stringRepresentation) {
         mBezierSymbols = Collections.unmodifiableList(bezierSymbols);
+        mStringRepresentation = stringRepresentation;
     }
 
     @Override
@@ -39,7 +41,7 @@ class BezierStringImpl implements BezierString {
 
     @Override
     public BezierString substring(int startIndex, int endIndex) {
-        return new BezierStringImpl(mBezierSymbols.subList(startIndex, endIndex));
+        return new BezierStringImpl(mBezierSymbols.subList(startIndex, endIndex), mStringRepresentation.substring(startIndex, endIndex));
     }
 
     @Override
@@ -51,5 +53,10 @@ class BezierStringImpl implements BezierString {
     @Override
     public Iterator<BezierSymbol> iterator() {
         return mBezierSymbols.iterator();
+    }
+
+    @Override
+    public String toString() {
+        return mStringRepresentation;
     }
 }

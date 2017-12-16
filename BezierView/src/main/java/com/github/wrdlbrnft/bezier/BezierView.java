@@ -15,8 +15,8 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
+import com.github.wrdlbrnft.bezier.string.BezierString;
 import com.github.wrdlbrnft.bezier.symbols.BezierSymbol;
-import com.github.wrdlbrnft.bezier.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,6 @@ public class BezierView extends View {
     private static final int DEFAULT_HORIZONTAL_DIGIT_PADDING = 0;
     private static final int DEFAULT_VERTICAL_DIGIT_PADDING = 0;
     private static final float DEFAULT_DIGIT_STROKE_WIDTH = 1.0f;
-    private static final String DEFAULT_TEXT = null;
 
     private final List<BezierSymbolDrawable> mCurrentDrawables = new ArrayList<>();
 
@@ -65,7 +64,7 @@ public class BezierView extends View {
     @ColorInt
     private int mTextColor = DEFAULT_COLOR;
     private float mTextSize = DEFAULT_TEXT_SIZE;
-    private String mText = DEFAULT_TEXT;
+    private BezierString mText = BezierString.empty();
     private long mAnimationDuration = DEFAULT_DURATION;
     private float mTextStrokeWidth = DEFAULT_DIGIT_STROKE_WIDTH;
     private int mHorizontalDigitPadding = DEFAULT_HORIZONTAL_DIGIT_PADDING;
@@ -102,7 +101,7 @@ public class BezierView extends View {
             setTextSize(textSize);
 
             final String text = typedArray.getString(R.styleable.BezierView_text);
-            setText(text);
+            setText(BezierString.of(text));
 
             final long animationDuration = typedArray.getInt(R.styleable.BezierView_animationDuration, (int) DEFAULT_DURATION);
             setAnimationDuration(animationDuration);
@@ -120,23 +119,22 @@ public class BezierView extends View {
         }
     }
 
-    public void setText(String text) {
-        mText = text;
-        updateText(text == null ? "" : text);
+    public void setText(BezierString string) {
+        mText = string;
+        updateText(string == null ? BezierString.empty() : string);
     }
 
-    public String getText() {
+    public BezierString getText() {
         return mText;
     }
 
-    private void updateText(String text) {
+    private void updateText(BezierString string) {
         int counter = 0;
         boolean layoutChanged = false;
 
         final List<Animator> animators = new ArrayList<>();
-        for (int i = 0, count = text.length(); i < count; i++, counter++) {
-            final char letter = text.charAt(i);
-            final BezierSymbol symbol = BezierSymbol.of(letter);
+        for (int i = 0, count = string.length(); i < count; i++, counter++) {
+            final BezierSymbol symbol = string.symbolAt(i);
 
             if (i < mCurrentDrawables.size()) {
                 final BezierSymbolDrawable drawable = mCurrentDrawables.get(i);
@@ -264,8 +262,8 @@ public class BezierView extends View {
         final int width = resolveMeasuredSize(desiredWidth, widthMode, widthSize);
         final int height = resolveMeasuredSize(desiredHeight, heightMode, heightSize);
 
-        final int offsetX = (width - desiredWidth) / 2  + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
-        final int offsetY = (height - desiredHeight) / 2  + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
+        final int offsetX = (width - desiredWidth) / 2 + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
+        final int offsetY = (height - desiredHeight) / 2 + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
 
         for (int i = 0; i < mCurrentDrawables.size(); i++) {
             final BezierSymbolDrawable drawable = mCurrentDrawables.get(i);

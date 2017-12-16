@@ -16,22 +16,6 @@ public interface BezierSymbol {
     }
 
     static BezierSymbol of(char character) {
-        switch (character) {
-
-            case '0': return new BezierZero();
-            case '1': return new BezierOne();
-            case '2': return new BezierTwo();
-            case '3': return new BezierThree();
-            case '4': return new BezierFour();
-            case '5': return new BezierFive();
-            case '6': return new BezierSix();
-            case '7': return new BezierSeven();
-            case '8': return new BezierEight();
-            case '9': return new BezierNine();
-            case ' ': return new BezierNone();
-
-            default:
-                throw new IllegalArgumentException(String.format("No symbol for character %s is defined.", character));
-        }
+        return BezierSymbolFactory.get(character);
     }
 }
