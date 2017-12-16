@@ -12,7 +12,9 @@ import android.os.Looper;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -43,6 +45,7 @@ public class BezierView extends View {
     private static final int DEFAULT_HORIZONTAL_DIGIT_PADDING = 0;
     private static final int DEFAULT_VERTICAL_DIGIT_PADDING = 0;
     private static final float DEFAULT_DIGIT_STROKE_WIDTH = 1.0f;
+    private static final int DEFAULT_GRAVITY = Gravity.CENTER;
 
     private final List<BezierSymbolDrawable> mCurrentDrawables = new ArrayList<>();
 
@@ -71,6 +74,7 @@ public class BezierView extends View {
     private float mTextStrokeWidth = DEFAULT_DIGIT_STROKE_WIDTH;
     private int mHorizontalDigitPadding = DEFAULT_HORIZONTAL_DIGIT_PADDING;
     private int mVerticalDigitPadding = DEFAULT_VERTICAL_DIGIT_PADDING;
+    private int mGravity = DEFAULT_GRAVITY;
 
     private final AnimationCoreographer mCoreographer = new AnimationCoreographer();
 
@@ -98,6 +102,9 @@ public class BezierView extends View {
         try {
             final int textColor = typedArray.getColor(R.styleable.BezierView_textColor, DEFAULT_COLOR);
             setTextColor(textColor);
+
+            final int gravity = typedArray.getInteger(R.styleable.BezierView_android_gravity, DEFAULT_GRAVITY);
+            setGravity(gravity);
 
             final float textSize = typedArray.getDimensionPixelSize(R.styleable.BezierView_textSize, DEFAULT_TEXT_SIZE);
             setTextSize(textSize);
@@ -164,7 +171,7 @@ public class BezierView extends View {
             requestLayout();
         }
 
-        if(!animators.isEmpty()) {
+        if (!animators.isEmpty()) {
             final AnimatorSet set = new AnimatorSet();
             final Animator[] animatorArray = animators.toArray(new Animator[animators.size()]);
             set.setInterpolator(INTERPOLATOR);
@@ -172,6 +179,15 @@ public class BezierView extends View {
             set.playTogether(animatorArray);
             mCoreographer.queue(set);
         }
+    }
+
+    public int getGravity() {
+        return mGravity;
+    }
+
+    public void setGravity(int gravity) {
+        mGravity = gravity;
+        requestLayout();
     }
 
     public float getTextSize() {
@@ -248,8 +264,16 @@ public class BezierView extends View {
         final int digitPaddingY = mVerticalDigitPadding;
         final int stepWidthX = (int) (digitWidth * STEP_WIDTH_FACTOR + 0.5f);
 
-        final int desiredWidth = digitPaddingX + (stepWidthX + digitPaddingX) * mCurrentDrawables.size();
-        final int desiredHeight = digitHeight + 2 * digitPaddingY;
+        final int paddingLeft = getPaddingLeft();
+        final int paddingTop = getPaddingTop();
+        final int paddingRight = getPaddingRight();
+        final int paddingBottom = getPaddingBottom();
+
+        final int contentWidth = digitPaddingX + (stepWidthX + digitPaddingX) * mCurrentDrawables.size();
+        final int contentHeight = digitHeight + 2 * digitPaddingY;
+
+        final int desiredWidth = contentWidth + paddingLeft + paddingRight;
+        final int desiredHeight = contentHeight + paddingTop + paddingBottom;
 
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int widthSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -259,8 +283,14 @@ public class BezierView extends View {
         final int width = resolveMeasuredSize(desiredWidth, widthMode, widthSize);
         final int height = resolveMeasuredSize(desiredHeight, heightMode, heightSize);
 
-        final int offsetX = (width - desiredWidth) / 2 + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
-        final int offsetY = (height - desiredHeight) / 2 + (int) (mTextSize * CENTERING_FACTOR + 0.5f);
+        final int layoutDirection = ViewCompat.getLayoutDirection(this);
+        final int absoluteGravity = Gravity.getAbsoluteGravity(mGravity, layoutDirection);
+
+        final int gravityOffsetX = calculateHorizontalOffset(absoluteGravity, width, contentWidth);
+        final int gravityOffsetY = calculateVerticalOffset(absoluteGravity, height, contentHeight);
+
+        final int offsetX = gravityOffsetX + (int) (mTextSize * CENTERING_FACTOR + 0.5f) + paddingLeft;
+        final int offsetY = gravityOffsetY + (int) (mTextSize * CENTERING_FACTOR + 0.5f) + paddingTop;
 
         for (int i = 0; i < mCurrentDrawables.size(); i++) {
             final BezierSymbolDrawable drawable = mCurrentDrawables.get(i);
@@ -274,7 +304,7 @@ public class BezierView extends View {
         setMeasuredDimension(width, height);
     }
 
-    private int resolveMeasuredSize(int desiredSize, int mode, int limit) {
+    private static int resolveMeasuredSize(int desiredSize, int mode, int limit) {
 
         if (mode == MeasureSpec.EXACTLY) {
             return limit;
@@ -285,6 +315,36 @@ public class BezierView extends View {
         }
 
         return desiredSize;
+    }
+
+    private static int calculateHorizontalOffset(int gravity, int width, int contentWidth) {
+        switch (gravity & Gravity.HORIZONTAL_GRAVITY_MASK) {
+
+            case Gravity.CENTER_HORIZONTAL:
+                return (width - contentWidth) / 2;
+
+            case Gravity.RIGHT:
+                return width - contentWidth;
+
+            case Gravity.LEFT:
+            default:
+                return 0;
+        }
+    }
+
+    private static int calculateVerticalOffset(int gravity, int height, int contentHeight) {
+        switch (gravity & Gravity.VERTICAL_GRAVITY_MASK) {
+
+            case Gravity.CENTER_VERTICAL:
+                return (height - contentHeight) / 2;
+
+            case Gravity.BOTTOM:
+                return height - contentHeight;
+
+            case Gravity.TOP:
+            default:
+                return 0;
+        }
     }
 
     @Override
