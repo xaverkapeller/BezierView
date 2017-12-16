@@ -7,6 +7,8 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -70,7 +72,7 @@ public class BezierView extends View {
     private int mHorizontalDigitPadding = DEFAULT_HORIZONTAL_DIGIT_PADDING;
     private int mVerticalDigitPadding = DEFAULT_VERTICAL_DIGIT_PADDING;
 
-    private Animator mAnimator;
+    private final AnimationCoreographer mCoreographer = new AnimationCoreographer();
 
     public BezierView(Context context) {
         super(context);
@@ -133,10 +135,11 @@ public class BezierView extends View {
         boolean layoutChanged = false;
 
         final List<Animator> animators = new ArrayList<>();
+        final int drawableCount = mCurrentDrawables.size();
         for (int i = 0, count = string.length(); i < count; i++, counter++) {
             final BezierSymbol symbol = string.symbolAt(i);
 
-            if (i < mCurrentDrawables.size()) {
+            if (i < drawableCount) {
                 final BezierSymbolDrawable drawable = mCurrentDrawables.get(i);
                 animators.add(drawable.createAnimator(symbol));
             } else {
@@ -150,10 +153,10 @@ public class BezierView extends View {
             }
         }
 
-        while (counter < mCurrentDrawables.size()) {
+        int limit = counter;
+        while (counter < drawableCount) {
             layoutChanged = true;
-            final BezierSymbolDrawable drawable = mCurrentDrawables.get(mCurrentDrawables.size() - 1 - counter);
-            animators.add(drawable.createAnimator(BezierSymbol.of(' ')));
+            mCurrentDrawables.remove(drawableCount - 1 - counter + limit);
             counter++;
         }
 
@@ -161,20 +164,13 @@ public class BezierView extends View {
             requestLayout();
         }
 
-        if (mAnimator != null) {
-            mAnimator.cancel();
-            mAnimator = null;
-        }
-
-        if (!animators.isEmpty()) {
+        if(!animators.isEmpty()) {
             final AnimatorSet set = new AnimatorSet();
             final Animator[] animatorArray = animators.toArray(new Animator[animators.size()]);
             set.setInterpolator(INTERPOLATOR);
             set.setDuration(mAnimationDuration);
             set.playTogether(animatorArray);
-            set.start();
-
-            mAnimator = set;
+            mCoreographer.queue(set);
         }
     }
 
@@ -241,6 +237,7 @@ public class BezierView extends View {
 
     public void setAnimationDuration(long duration) {
         mAnimationDuration = duration;
+        mCoreographer.setMinDisplayTime(duration * 2 / 5);
     }
 
     @Override
@@ -296,6 +293,55 @@ public class BezierView extends View {
 
         for (BezierSymbolDrawable currentDrawable : mCurrentDrawables) {
             currentDrawable.draw(canvas);
+        }
+    }
+
+    private static class AnimationCoreographer {
+
+        private final Runnable mStartNextAnimator = new Runnable() {
+            @Override
+            public void run() {
+                if (mNext != null) {
+                    startAnimator(mNext);
+                }
+            }
+        };
+
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
+
+        private Animator mNext = null;
+        private Animator mCurrent = null;
+
+        private long mCurrentStartTime;
+        private long mMinDisplayTime;
+
+        public void setMinDisplayTime(long minDisplayTime) {
+            mMinDisplayTime = minDisplayTime;
+        }
+
+        public void queue(Animator animator) {
+            mHandler.removeCallbacks(mStartNextAnimator);
+
+            if (mCurrent == null) {
+                startAnimator(animator);
+                return;
+            }
+
+            final long currentDisplayTime = System.currentTimeMillis() - mCurrentStartTime;
+
+            if (mMinDisplayTime < currentDisplayTime) {
+                mCurrent.cancel();
+                startAnimator(animator);
+            } else {
+                mNext = animator;
+                mHandler.postDelayed(mStartNextAnimator, mCurrentStartTime + mMinDisplayTime - System.currentTimeMillis());
+            }
+        }
+
+        private void startAnimator(Animator animator) {
+            mCurrent = animator;
+            mCurrentStartTime = System.currentTimeMillis();
+            mCurrent.start();
         }
     }
 }
