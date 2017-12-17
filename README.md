@@ -12,7 +12,7 @@ Beautifully animated morphing numbers made easy!
 Just add this dependency to your build.gradle file:
 
 ```groovy
-compile 'com.github.wrdlbrnft:bezier-view:0.1.0.1'
+compile 'com.github.wrdlbrnft:bezier-view:0.1.0.5'
 ```
 
 ## How do I use it?
