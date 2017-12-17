@@ -390,7 +390,6 @@ public class BezierView extends View {
             final long currentDisplayTime = System.currentTimeMillis() - mCurrentStartTime;
 
             if (mMinDisplayTime < currentDisplayTime) {
-                mCurrent.cancel();
                 startAnimator(animator);
             } else {
                 mNext = animator;
@@ -399,6 +398,9 @@ public class BezierView extends View {
         }
 
         private void startAnimator(Animator animator) {
+            if (mCurrent != null) {
+                mCurrent.cancel();
+            }
             mCurrent = animator;
             mCurrentStartTime = System.currentTimeMillis();
             mCurrent.start();
